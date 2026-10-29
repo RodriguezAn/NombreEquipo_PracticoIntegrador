@@ -1,0 +1,116 @@
+import java.util.ArrayList;
+import java.util.Calendar;
+/**
+ * Write a description of class Biblioteca here.
+ * 
+ * @author (your name) 
+ * @version (a version number or a date)
+ */
+public class Biblioteca{
+    private String nombre;
+    private ArrayList<Socio> socios;
+    private ArrayList<Libro> libros;
+    
+    public Biblioteca(String p_nombre){
+        this.setNombre(p_nombre);
+        this.socio = new ArrayList<Socio>();
+        this.libros = new ArratList<Libro>();
+    }
+    
+    public String getNombre(){
+        return this.nombre;
+    }
+    public ArrayList<Socio> getSocios(){
+        return this.socios;
+    }
+    public ArrayList<Libro> getLibros(){
+        return this.libros;
+    }
+    
+    public void nuevoLibro(String p_titulo, int p_edicion, String p_editorial, int p_anio){
+        Libro nuevo = new Libro(p_titulo, p_edicion, p_editorial, p_anio);
+        libros.add(nuevo);
+    }
+    
+    public void nuevoSocioEstudiante(int p_dniSocio, String p_nombre, String p_carrera) {
+        Estudiante est = new Estudiante(p_dniSocio, p_nombre, p_carrera);
+        socios.add(est);
+    }
+
+    public void nuevoSocioDocente(int p_dniSocio, String p_nombre, String p_area) {
+        Docente doc = new Docente(p_dniSocio, p_nombre, p_area);
+        socios.add(doc);
+    }
+    
+    public boolean prestarLibro(Calendar p_fechaRetiro, Socio p_socio, Libro p_libro){
+        if(p_socio.puedePedir() && !p_libro.prestado()){
+            Prestamo prestamo = new Prestamo(p_fechaRetiro, p_socio, p_libro);
+            p_socio.addPrestamo(prestamo);
+            p_libro.addPrestamo(prestamo);
+            return true;
+        }
+        return false;
+    }
+    
+    public void devolverLibro(Libro p_libro) throws LibroNoPrestadoExeption{
+        if(!p_libro.prestado()){
+            throw new LibroNoPrestadoExeption("El libro " + p_libro.getTitulo() + 
+                         "no se puede devolver ya que se encuetra en la biblioteca");
+        }
+        Prestamo unPrestamo = p_libro.ultimoPrestamo();
+        unPrestamo.registrarFechaDevolucion(Calendar.getInstance());
+    }
+    
+    public int cantidadDeSociosPorTipo(String p_objeto){
+        int c = 0;
+        for (Socio s : socios){
+            if(s.soyDeLaClase().equalsIgnoreCase(p_objeto)){
+                c++;
+            }
+        }
+        return c;
+    }
+    
+    public ArrayList<Prestamo> prestamosVencidos(){
+        ArraryList<Prestamo> vencidos = new ArrayList<Prestamo>();
+        Calendar hoy = Calendar.getInstance();
+        for(Libro l : libros){
+            if(l.prestado()){
+                Prestamo u = l.ultimoPrestamo();
+                if(u.vencido(hoy)){
+                    vencidos.add(u);
+                }
+            }
+        }
+        return vencidos;
+    }
+    
+    public ArrayList<Docente> docentesResponsables() {
+        ArrayList<Docente> responsables = new ArrayList<Docente>();
+        for (Socio s : socios) {
+            if (s instanceof Docente) {
+                Docente d = (Docente) s;
+                if (d.esResponsable()) {
+                    responsables.add(d);
+                }
+            }
+        }
+        return responsables;
+    }
+    
+    public String quienTieneElLibro(Libro p_libro) throws LibroNoPrestadoException {
+        if (!p_libro.prestado()) {
+            throw new LibroNoPrestadoException("El libro se encuentra en la biblioteca");
+        }
+        return p_libro.ultimoPrestamo().getSocio().getNombre();
+    }
+
+    public Socio buscarSocio(int p_dni) {
+        for (Socio s : socios) {
+            if (s.getDniSocio() == p_dni) {
+                return s;
+            }
+        }
+        return null;
+    }
+}
